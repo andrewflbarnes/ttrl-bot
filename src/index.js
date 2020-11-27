@@ -10,6 +10,9 @@ const BOT_TOKEN = process.env.BOT_TOKEN
 const API_TOKEN = process.env.API_TOKEN
 const API = process.env.API
 const API_USERS = API + '/users'
+function apiUsersDiscordId(discordId) {
+    return API_USERS + "/" + encodeURIComponent(discordId)
+}
 
 const HELP_TEXT = `Commands:
 !stats - show your current stats
@@ -17,6 +20,7 @@ const HELP_TEXT = `Commands:
 !lost - increment your lost count by 1
 !high <score> - udpate your high score
 !picture <url>  - update your profile picture
+!name <name> - update your name
 `
 
 // Configure logging
@@ -43,7 +47,6 @@ const logger = createLogger({
     ]
   });
 
-
 // Configure Discrod Bot
 const bot = new Discord.Client();
 
@@ -66,14 +69,54 @@ bot.on('message', msg => {
     const command = args.shift().toLowerCase();
 
     const  { author } = msg;
-    const { tag } = author
+    const { tag, username } = author
     const authorInfo = asInfoString(author)
+
+    const discordIdEndpoint = apiUsersDiscordId(tag)
+
     switch (command) {
         case 'ping':
             msg.channel.send(`Shutup ${author}`);
             break;
         case 'ttrl':
             msg.channel.send(HELP_TEXT);
+            break;
+        case 'register':
+            logger.verbose("Registering user for " + authorInfo)
+
+            const body = {
+                secret: API_TOKEN,
+                discordId: tag,
+                name: username,
+            }
+
+            logger.http('Calling API POST', {
+                endpoint: API_USERS,
+                body,
+            })
+            axios
+                .post(API_USERS, body, {
+                    'content-type': 'application/json'
+                })
+                .then(response => {
+                    logger.http('API POST call successful', {
+                        body: response.data
+                    })
+                    msg.channel.send(`${author} - you've been registered!`);
+                })
+                .catch(err => {
+                    logger.error(`Unable to register user ${asInfoString(author)}: ${err}`)
+
+                    let msgText
+                    switch (err.response.status) {
+                        case 409:
+                            msgText = `${author} - you're already registered`
+                            break;
+                        default:
+                            msgText = `Sorry ${author} - I broke :( (${err})`
+                    }
+                    msg.channel.send(msgText);
+                })
             break;
         case 'won':
             logger.verbose("Updating wins for " + authorInfo)
@@ -93,6 +136,12 @@ bot.on('message', msg => {
                 r => msg.channel.send(`${author} - I've updated your picture`)
             )
             break;
+        case 'name':
+            logger.verbose("Updating name for " + authorInfo)
+            userUpdateValueOp(author, "name", content.slice(CMD_PREFIX.length + 4 + 1),
+                r => msg.channel.send(`${author} - I've updated your name`)
+            )
+            break;
         case 'high':
             logger.verbose("Updating high score for " + authorInfo)
             userUpdateValueOp(author, "high", args[0],
@@ -100,21 +149,33 @@ bot.on('message', msg => {
             )
             break;
         case 'stats':
+            {}
             logger.verbose("Retrieving user stats for " + authorInfo)
 
-            const endpoint = API_USERS + "/" + encodeURIComponent(tag)
-
             logger.http('Calling API GET', {
-                endpoint,
+                endpoint: discordIdEndpoint,
             })
             axios
-                .get(endpoint)
+                .get(discordIdEndpoint)
                 .then(response => {
                     logger.http('API GET call successful', {
                         body: response.data
                     })
                     let { wins, losses, high } = response.data
-                    msg.channel.send(`Wins: ${wins}, Losses: ${losses}, High Score: ${high}`);
+                    msg.channel.send(`${author}\nWins: ${wins}, Losses: ${losses}, High Score: ${high}`);
+                })
+                .catch(err => {
+                    logger.error(`Unable to retrieve user stats for ${asInfoString(author)}: ${err}`)
+
+                    let msg
+                    switch (err.response.status) {
+                        case 404:
+                            msg = `${author} - you don't appear to be registered. You can do this with the "!register" command`
+                            break;
+                        default:
+                            msg = `Sorry ${author} - I broke :( (${err})`
+                    }
+                    msg.channel.send(msg);
                 })
             break;
     }
@@ -134,7 +195,7 @@ function userUpdateOp(tag, operation, onSuccess) {
 
 function userUpdateValueOp(author, operation, opval, onSuccess) {
     const { tag } = author
-    const endpoint = API_USERS + "/" + encodeURIComponent(tag)
+    const endpoint = apiUsersDiscordId(tag)
     const body = {
         secret: API_TOKEN,
         operation,
