@@ -47,6 +47,15 @@ const logger = createLogger({
     ]
   });
 
+if (!BOT_TOKEN) {
+    logger.error('BOT_TOKEN not set')
+    process.exit(1)
+}
+
+if (!API_TOKEN) {
+    logger.warn('API_TOKEN not set - mutation operations may not work')
+}
+
 // Configure Discrod Bot
 const bot = new Discord.Client();
 

@@ -7,8 +7,8 @@ COPY package*.json ./
 
 RUN npm install
 
-COPY main.js .
+ADD src src
 
 ENV API=https://ttrl-backend.herokuapp.com
 
-ENTRYPOINT [ "node", "main.js" ]
+ENTRYPOINT [ "node", "src" ]
