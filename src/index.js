@@ -15,6 +15,7 @@ function apiUsersDiscordId(discordId) {
 }
 
 const HELP_TEXT = `Commands:
+!register - register a new profile
 !stats - show your current stats
 !won - increment your win count by 1
 !lost - increment your lost count by 1
