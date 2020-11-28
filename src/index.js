@@ -77,7 +77,7 @@ bot.on('message', msg => {
     const args = content.slice(CMD_PREFIX.length).trim().split(/\s+/)
     const command = args.shift().toLowerCase();
 
-    const  { author } = msg;
+    const  { author, channel } = msg;
     const { tag, username } = author
     const authorInfo = asInfoString(author)
 
@@ -85,10 +85,10 @@ bot.on('message', msg => {
 
     switch (command) {
         case 'ping':
-            msg.channel.send(`Shutup ${author}`);
+            channel.send(`Shutup ${author}`);
             break;
         case 'ttrl':
-            msg.channel.send(HELP_TEXT);
+            channel.send(HELP_TEXT);
             break;
         case 'register':
             logger.verbose("Registering user for " + authorInfo)
@@ -111,50 +111,50 @@ bot.on('message', msg => {
                     logger.http('API POST call successful', {
                         body: response.data
                     })
-                    msg.channel.send(`${author} - you've been registered!`);
+                    channel.send(`${author} - you've been registered!`);
                 })
                 .catch(err => {
                     logger.error(`Unable to register user ${asInfoString(author)}: ${err}`)
 
                     let msgText
-                    switch (err.response.status) {
+                    switch (err?.response?.status) {
                         case 409:
                             msgText = `${author} - you're already registered`
                             break;
                         default:
                             msgText = `Sorry ${author} - I broke :( (${err})`
                     }
-                    msg.channel.send(msgText);
+                    channel.send(msgText);
                 })
             break;
         case 'won':
             logger.verbose("Updating wins for " + authorInfo)
-            userUpdateOp(author, "win",
-                r => msg.channel.send(`${author} - I've updated your win count`)
+            userUpdateOp(msg, "win",
+                r => channel.send(`${author} - I've updated your win count`)
             )
             break;
         case 'lost':
             logger.verbose("Updating losses for " + authorInfo)
-            userUpdateOp(author, "lose",
-                r => msg.channel.send(`${author} - I've updated your lost count`)
+            userUpdateOp(msg, "lose",
+                r => channel.send(`${author} - I've updated your lost count`)
             )
             break;
         case 'picture':
             logger.verbose("Updating profile picture for " + authorInfo)
-            userUpdateValueOp(author, "picture", args[0],
-                r => msg.channel.send(`${author} - I've updated your picture`)
+            userUpdateValueOp(msg, "picture", args[0],
+                r => channel.send(`${author} - I've updated your picture`)
             )
             break;
         case 'name':
             logger.verbose("Updating name for " + authorInfo)
-            userUpdateValueOp(author, "name", content.slice(CMD_PREFIX.length + 4 + 1),
-                r => msg.channel.send(`${author} - I've updated your name`)
+            userUpdateValueOp(msg, "name", content.slice(CMD_PREFIX.length + 4 + 1),
+                r => channel.send(`${author} - I've updated your name`)
             )
             break;
         case 'high':
             logger.verbose("Updating high score for " + authorInfo)
-            userUpdateValueOp(author, "high", args[0],
-                r => msg.channel.send(`${author} - I've updated your high score`)
+            userUpdateValueOp(msg, "high", args[0],
+                r => channel.send(`${author} - I've updated your high score`)
             )
             break;
         case 'stats':
@@ -170,21 +170,30 @@ bot.on('message', msg => {
                     logger.http('API GET call successful', {
                         body: response.data
                     })
-                    let { wins, losses, high } = response.data
-                    msg.channel.send(`${author}\nWins: ${wins}, Losses: ${losses}, High Score: ${high}`);
+                    let { wins, losses, high, picture } = response.data
+                    let embed = new Discord.MessageEmbed()
+                        .setColor('#0099ff')
+                        .setTitle(`${username}'s TTR Statistics`)
+                        .setThumbnail(picture)
+                        .addFields(
+                            { name: 'Wins', value: wins, inline: true },
+                            { name: 'Losses', value: losses, inline: true },
+                            { name: 'High Score', value: high, inline: true },
+                        )
+                    channel.send(embed)
                 })
                 .catch(err => {
                     logger.error(`Unable to retrieve user stats for ${asInfoString(author)}: ${err}`)
 
-                    let msg
-                    switch (err.response.status) {
+                    let msgText
+                    switch (err?.response?.status) {
                         case 404:
-                            msg = `${author} - you don't appear to be registered. You can do this with the "!register" command`
+                            msgText = `${author} - you don't appear to be registered. You can do this with the "!register" command`
                             break;
                         default:
-                            msg = `Sorry ${author} - I broke :( (${err})`
+                            msgText = `Sorry ${author} - I broke :( (${err})`
                     }
-                    msg.channel.send(msg);
+                    channel.send(msgText);
                 })
             break;
     }
@@ -198,11 +207,12 @@ function asInfoString({ tag, username, id }) {
     return `${username} (${tag} / ${id})`
 }
 
-function userUpdateOp(tag, operation, onSuccess) {
-    return userUpdateValueOp(tag, operation, null, onSuccess)
+function userUpdateOp(msg, operation, onSuccess) {
+    return userUpdateValueOp(msg, operation, null, onSuccess)
 }
 
-function userUpdateValueOp(author, operation, opval, onSuccess) {
+function userUpdateValueOp(msg, operation, opval, onSuccess) {
+    const { author, channel } = msg
     const { tag } = author
     const endpoint = apiUsersDiscordId(tag)
     const body = {
@@ -225,7 +235,15 @@ function userUpdateValueOp(author, operation, opval, onSuccess) {
             onSuccess(response)
         })
         .catch(err => {
+            let msgText
+            switch (err?.response?.status) {
+                case 404:
+                    msgText = `${author} - you don't appear to be registered. You can do this with the "!register" command`
+                    break;
+                default:
+                    msgText = `Sorry ${author} - I broke :( (${err})`
+            }
             logger.error(`Unable to update [${operation}->${opval}]for ${asInfoString(author)}: ${err}`)
-            msg.channel.send(`Sorry ${author} - I broke :( (${err})`);
+            channel.send(msgText);
         })
 }

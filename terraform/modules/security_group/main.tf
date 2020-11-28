@@ -10,6 +10,7 @@ resource "aws_security_group" "instance" {
   #   vpc_id      = aws_vpc.main.id
 
   egress {
+    description = "Allow all outbound connections"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -17,6 +18,7 @@ resource "aws_security_group" "instance" {
   }
 
   ingress {
+    description = "Allow inbound SSH connections"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
