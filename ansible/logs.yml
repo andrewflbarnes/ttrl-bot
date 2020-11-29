@@ -1,0 +1,7 @@
+---
+- name: Show recent TTRL bot logs
+  gather_facts: false
+  hosts: all
+  roles:
+  - ttrl-logs
+

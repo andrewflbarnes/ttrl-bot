@@ -1,0 +1,15 @@
+- name: ttrl-bot logs
+  shell:
+    cmd: cat ttrl.log
+    chdir: /opt/bitnami/ttrl-bot
+  register: log
+
+- debug: var=log.stdout_lines
+
+- name: ttrl-bot systemctl logs
+  become: true
+  shell:
+    cmd: systemctl status ttrlbot.service
+  register: log
+
+- debug: var=log.stdout_lines
