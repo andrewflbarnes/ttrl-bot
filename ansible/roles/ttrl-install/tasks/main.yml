@@ -1,0 +1,14 @@
+- name: Create bot directory
+  file:
+    path: "{{ ttrl_folder }}"
+    owner: "{{ ttrl_user }}"
+    group: "{{ ttrl_group }}"
+    mode: '1755'
+    state: directory
+
+- name: Checkout ttrl-bot
+  git:
+    repo: "{{ ttrl_repo }}"
+    dest: "{{ ttrl_folder }}"
+    version: "{{ ttrl_version }}"
+    update: no

@@ -1,0 +1,7 @@
+---
+- name: Install the TTRL Bot
+  gather_facts: false
+  hosts: all
+  roles:
+  - ttrl-install
+

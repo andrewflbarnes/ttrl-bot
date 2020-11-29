@@ -1,7 +1,7 @@
 - name: ttrl-bot logs
   shell:
     cmd: cat ttrl.log
-    chdir: /opt/bitnami/ttrl-bot
+    chdir: "{{ ttrl_folder }}"
   register: log
 
 - debug: var=log.stdout_lines

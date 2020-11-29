@@ -1,0 +1,6 @@
+ttrl_user: bitnami
+ttrl_group: bitnami
+ttrl_folder: /opt/bitnami/ttrl-bot
+ttrl_repo: https://github.com/andrewflbarnes/ttrl-bot
+ttrl_version: master
+
