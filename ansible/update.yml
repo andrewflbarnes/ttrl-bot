@@ -1,0 +1,6 @@
+---
+- name: Update the TTRL Bot to the latest version
+  gather_facts: false
+  hosts: all
+  roles:
+  - ttrl-update

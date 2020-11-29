@@ -1,0 +1,7 @@
+- name: Checkout ttrl-bot
+  git:
+    repo: "{{ ttrl_repo }}"
+    dest: "{{ ttrl_folder }}"
+    version: "{{ ttrl_version }}"
+    update: yes
+  notify: "Restart bot"
