@@ -12,3 +12,11 @@
     dest: "{{ ttrl_folder }}"
     version: "{{ ttrl_version }}"
     update: no
+
+- name: Add TTRL bot service config
+  become: true
+  template:
+    src: ttrlbot.service.j2
+    dest: /etc/systemd/system/ttrlbot.service
+    mode: '0644'
+

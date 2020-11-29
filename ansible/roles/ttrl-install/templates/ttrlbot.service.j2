@@ -1,0 +1,13 @@
+[Unit]
+Description=TTRL Discord Bot
+
+[Service]
+WorkingDirectory={{ ttrl_folder }}
+ExecStart={{ ttrl_node }} {{ ttrl_folder }}/src
+Restart=on-failure
+EnvironmentFile=/etc/environment
+User={{ ttrl_user }}
+Group={{ ttrl_group }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+- name: Start TTRL Bot service
+  become: true
+  systemd:
+    name: ttrlbot
+    state: started

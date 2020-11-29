@@ -1,0 +1,5 @@
+- name: Update and restart TTRL Bot service
+  systemd:
+    name: ttrlbot
+    state: restarted
+    daemon_reload: yes
