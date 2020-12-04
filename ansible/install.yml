@@ -4,19 +4,19 @@
   hosts: all
   vars_prompt:
   - name: ttrl_api
-    prompt: "The base URL of the backend API"
+    prompt: "Base URL of the backend API"
     default: https://ttrl-backend.herokuapp.com
     private: no
   - name: ttrl_log_level
-    prompt: "The log level (error, warn, info, http, verbose, silly)"
+    prompt: "Log level (error, warn, info, http, verbose, silly)"
     default: info
     private: no
   - name: ttrl_api_token
-    prompt: "Input TTRL API token (leave empty to disaalow mutation operations)"
+    prompt: "API token (leave empty to disaalow mutation operations)"
     unsafe: yes
     private: yes
   - name: ttrl_bot_token
-    prompt: "Input TTRL BOT token (this is the auth token for the bot to authenticate against Discrod with)"
+    prompt: "BOT token (this is the auth token for the bot to authenticate against Discrod with)"
     unsafe: yes
     private: yes
   roles:
