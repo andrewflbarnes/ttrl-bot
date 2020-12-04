@@ -2,5 +2,11 @@
 - name: Update the TTRL Bot to the latest version
   gather_facts: false
   hosts: all
+  vars_prompt:
+  - name: "ttrl_version"
+    prompt: "Git branch/tag/commit to checkout"
+    # amsible does not support picking up the default from group_vars
+    default: master
+    private: no
   roles:
   - ttrl-update
