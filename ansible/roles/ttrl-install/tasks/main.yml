@@ -13,10 +13,16 @@
     version: "{{ ttrl_version }}"
     update: no
 
+- name: Add TTRL bot env config
+  become: true
+  template:
+    src: env.j2
+    dest: "{{ ttrl_folder }}/.env"
+    mode: '0644'
+
 - name: Add TTRL bot service config
   become: true
   template:
     src: ttrlbot.service.j2
     dest: /etc/systemd/system/ttrlbot.service
     mode: '0644'
-
