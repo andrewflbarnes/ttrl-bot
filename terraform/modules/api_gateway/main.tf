@@ -10,7 +10,7 @@ resource "aws_api_gateway_rest_api" "ttrl" {
 resource "aws_api_gateway_resource" "ttrl" {
   provider    = aws.region
   parent_id   = aws_api_gateway_rest_api.ttrl.root_resource_id
-  path_part   = "ttrl"
+  path_part   = "event"
   rest_api_id = aws_api_gateway_rest_api.ttrl.id
 }
 
@@ -23,11 +23,13 @@ resource "aws_api_gateway_method" "ttrl-event" {
 }
 
 resource "aws_api_gateway_integration" "ttrl" {
-  provider    = aws.region
-  http_method = aws_api_gateway_method.ttrl-event.http_method
-  resource_id = aws_api_gateway_resource.ttrl.id
-  rest_api_id = aws_api_gateway_rest_api.ttrl.id
-  type        = "MOCK"
+  provider                = aws.region
+  http_method             = aws_api_gateway_method.ttrl-event.http_method
+  resource_id             = aws_api_gateway_resource.ttrl.id
+  rest_api_id             = aws_api_gateway_rest_api.ttrl.id
+  type                    = "HTTP_PROXY"
+  integration_http_method = "GET"
+  uri                     = "https://my-json-server.typicode.com/typicode/demo/posts"
 }
 
 resource "aws_api_gateway_deployment" "ttrl" {
@@ -43,9 +45,9 @@ resource "aws_api_gateway_deployment" "ttrl" {
     #       resources will show a difference after the initial implementation.
     #       It will stabilize to only change when resources change afterwards.
     redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.ttrl.id,
-      aws_api_gateway_method.ttrl-event.id,
-      aws_api_gateway_integration.ttrl.id,
+      aws_api_gateway_resource.ttrl,
+      aws_api_gateway_method.ttrl-event,
+      aws_api_gateway_integration.ttrl,
     ]))
   }
 
