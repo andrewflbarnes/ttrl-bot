@@ -1,4 +1,4 @@
-output "public_dns" {
-  description = "The public DNS of the AWS instance the TTRL bot will run in"
-  value       = module.ec2_node.public_dns
+output "api_gateway" {
+  description = "The provisioned API gateway"
+  value       = module.api_gateway.gateway
 }
