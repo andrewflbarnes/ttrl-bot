@@ -1,5 +1,4 @@
 provider "aws" {
-  alias   = "region"
   profile = "default"
   region  = var.region
 }
@@ -12,10 +11,15 @@ terraform {
   }
 }
 
+module "lambda" {
+  source = "./modules/lambda"
+
+  lambda_source = var.lambda_source
+}
+
 module "api_gateway" {
   source = "./modules/api_gateway"
 
-  providers = {
-    aws.region = aws.region
-  }
+  lambda_invoke_arn    = module.lambda.lambda_invoke_arn
+  lambda_function_name = module.lambda.function_name
 }

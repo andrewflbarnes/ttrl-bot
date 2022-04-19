@@ -1,39 +1,43 @@
-provider "aws" {
-  alias = "region"
+resource "aws_lambda_permission" "apigw_lambda" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = var.lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+  source_arn = "arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.ttrl.id}/*/${aws_api_gateway_method.ttrl-event.http_method}${aws_api_gateway_resource.ttrl-event.path}"
 }
 
 resource "aws_api_gateway_rest_api" "ttrl" {
-  provider = aws.region
-  name     = "ttrl"
+  name = "ttrl"
 }
 
-resource "aws_api_gateway_resource" "ttrl" {
-  provider    = aws.region
+resource "aws_api_gateway_resource" "ttrl-event" {
   parent_id   = aws_api_gateway_rest_api.ttrl.root_resource_id
   path_part   = "event"
   rest_api_id = aws_api_gateway_rest_api.ttrl.id
 }
 
 resource "aws_api_gateway_method" "ttrl-event" {
-  provider      = aws.region
   authorization = "NONE"
   http_method   = "POST"
-  resource_id   = aws_api_gateway_resource.ttrl.id
+  resource_id   = aws_api_gateway_resource.ttrl-event.id
   rest_api_id   = aws_api_gateway_rest_api.ttrl.id
 }
 
 resource "aws_api_gateway_integration" "ttrl" {
-  provider                = aws.region
-  http_method             = aws_api_gateway_method.ttrl-event.http_method
-  resource_id             = aws_api_gateway_resource.ttrl.id
-  rest_api_id             = aws_api_gateway_rest_api.ttrl.id
-  type                    = "HTTP_PROXY"
-  integration_http_method = "GET"
-  uri                     = "https://my-json-server.typicode.com/typicode/demo/posts"
+  http_method = aws_api_gateway_method.ttrl-event.http_method
+  resource_id = aws_api_gateway_resource.ttrl-event.id
+  rest_api_id = aws_api_gateway_rest_api.ttrl.id
+  # type                    = "HTTP_PROXY"
+  # integration_http_method = "GET"
+  # uri                     = "https://my-json-server.typicode.com/typicode/demo/posts"
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = var.lambda_invoke_arn
 }
 
 resource "aws_api_gateway_deployment" "ttrl" {
-  provider    = aws.region
   rest_api_id = aws_api_gateway_rest_api.ttrl.id
 
   triggers = {
@@ -45,7 +49,7 @@ resource "aws_api_gateway_deployment" "ttrl" {
     #       resources will show a difference after the initial implementation.
     #       It will stabilize to only change when resources change afterwards.
     redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.ttrl,
+      aws_api_gateway_resource.ttrl-event,
       aws_api_gateway_method.ttrl-event,
       aws_api_gateway_integration.ttrl,
     ]))
@@ -57,7 +61,6 @@ resource "aws_api_gateway_deployment" "ttrl" {
 }
 
 resource "aws_api_gateway_stage" "ttrl" {
-  provider      = aws.region
   deployment_id = aws_api_gateway_deployment.ttrl.id
   rest_api_id   = aws_api_gateway_rest_api.ttrl.id
   stage_name    = "ttrl"
