@@ -24,7 +24,7 @@ resource "aws_lambda_layer_version" "ttrl_discord_event_deps" {
   compatible_runtimes = [
     var.runtime
   ]
-  source_code_hash = filebase64sha256(var.lambda_deps_hash_source)
+  source_code_hash = filebase64sha256(var.lambda_deps_source)
 }
 
 resource "aws_lambda_function" "ttrl_discord_event" {
@@ -34,7 +34,7 @@ resource "aws_lambda_function" "ttrl_discord_event" {
   filename         = var.lambda_source
   handler          = var.handler
   role             = aws_iam_role.ttrl_discord_event.arn
-  source_code_hash = filebase64sha256(var.lambda_hash_source)
+  source_code_hash = filebase64sha256(var.lambda_source)
   layers = [
     aws_lambda_layer_version.ttrl_discord_event_deps.arn
   ]

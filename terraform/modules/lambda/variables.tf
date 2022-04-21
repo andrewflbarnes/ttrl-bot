@@ -3,18 +3,8 @@ variable "lambda_source" {
   type        = string
 }
 
-variable "lambda_hash_source" {
-  description = "The file to hash for the lambda"
-  type        = string
-}
-
 variable "lambda_deps_source" {
   description = "The zip file containing the lambda deps"
-  type        = string
-}
-
-variable "lambda_deps_hash_source" {
-  description = "The file to hash for the lambda deps"
   type        = string
 }
 

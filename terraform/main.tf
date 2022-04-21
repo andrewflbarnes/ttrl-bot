@@ -15,10 +15,7 @@ module "lambda" {
   source = "./modules/lambda"
 
   lambda_source      = var.lambda_source
-  lambda_hash_source = var.lambda_hash_source
-
-  lambda_deps_source      = var.lambda_deps_source
-  lambda_deps_hash_source = var.lambda_deps_hash_source
+  lambda_deps_source = var.lambda_deps_source
 }
 
 module "api_gateway" {

@@ -5,18 +5,19 @@ lambda_layer = ttrl_discord_event_lambda_deps.zip
 build: $(lambda_layer) $(lambda)
 
 $(lambda): src/index.js
-	zip -j $@ $<
+	zip -qj $@ $<
 
-$(lambda_layer): package.json package-lock.json build/nodejs/node_modules
-	zip -r $@ build
+$(lambda_layer): node_modules build/nodejs/node_modules/
+	zip -qr $@ build
+
+node_modules: package.json package-lock.json
+	npm install --production
+	touch node_modules
 
 build/nodejs/node_modules:
-	npm install --production
 	mkdir -p build/nodejs
-	mv node_modules build/nodejs/
+	[ ! -e build/nodejs/node_modules ] && ln -s $$(pwd)/node_modules build/nodejs/node_modules
 
 .PHONY: clean
 clean:
-	rm -rf node_modules
-	rm -rf build/nodejs/node_modules
 	rm -f $(lambda_layer) $(lambda)
