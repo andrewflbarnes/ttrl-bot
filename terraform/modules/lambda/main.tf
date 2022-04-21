@@ -17,12 +17,25 @@ resource "aws_iam_role" "ttrl_discord_event" {
 EOF
 }
 
+resource "aws_lambda_layer_version" "ttrl_discord_event_deps" {
+  layer_name  = "ttrl_discord_event_deps"
+  description = "Provides node_modules for the discord event lambda"
+  filename    = var.lambda_deps_source
+  compatible_runtimes = [
+    var.runtime
+  ]
+  source_code_hash = filebase64sha256(var.lambda_deps_hash_source)
+}
+
 resource "aws_lambda_function" "ttrl_discord_event" {
   function_name    = "ttrl_discord_event"
   description      = "Handles any discord events for ttrl"
   runtime          = var.runtime
-  role             = aws_iam_role.ttrl_discord_event.arn
-  handler          = var.handler
   filename         = var.lambda_source
-  source_code_hash = filebase64sha256(var.lambda_source)
+  handler          = var.handler
+  role             = aws_iam_role.ttrl_discord_event.arn
+  source_code_hash = filebase64sha256(var.lambda_hash_source)
+  layers = [
+    aws_lambda_layer_version.ttrl_discord_event_deps.arn
+  ]
 }

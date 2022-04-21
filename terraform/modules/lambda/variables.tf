@@ -3,6 +3,21 @@ variable "lambda_source" {
   type        = string
 }
 
+variable "lambda_hash_source" {
+  description = "The file to hash for the lambda"
+  type        = string
+}
+
+variable "lambda_deps_source" {
+  description = "The zip file containing the lambda deps"
+  type        = string
+}
+
+variable "lambda_deps_hash_source" {
+  description = "The file to hash for the lambda deps"
+  type        = string
+}
+
 variable "handler" {
   description = "The name of the lambda handler function"
   type        = string
@@ -12,5 +27,5 @@ variable "handler" {
 variable "runtime" {
   description = "The execution runtime for the lambda"
   type        = string
-  default     = "nodejs12.x"
+  default     = "nodejs14.x"
 }
