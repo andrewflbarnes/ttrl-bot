@@ -23,7 +23,7 @@ variable "lambda_deps_source" {
 }
 
 variable "lambda_deps_hash_source" {
-  default     = "../index.js"
+  default     = "../package-lock.json"
   description = "The zip file to hash for the lambda deps layer"
   type        = string
 }
