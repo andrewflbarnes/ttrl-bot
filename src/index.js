@@ -1,17 +1,61 @@
-
 const aws = require('aws-sdk');
 
+const RESPONSE_TYPES = {
+    "PONG": 1,
+    "ACK_NO_SOURCE": 2,
+    "MESSAGE_NO_SOURCE": 3,
+    "MESSAGE_WITH_SOURCE": 4,
+    "ACK_WITH_SOURCE": 5
+}
+Object.freeze(RESPONSE_TYPES);
+
+const PING_PONG = {
+    type: RESPONSE_TYPES.PONG,
+}
+Object.freeze(PING_PONG);
+
 exports.handler = async (event, context) => {
+
+    verifySignature(event);
     const body = JSON.parse(event.body);
-    return {
-        statusCode: 200,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body),
-        isBase64Encoded: false,
+
+    if (pingPong(body)) {
+        return response(PING_PONG, 200);
     }
+
+    return response({ message: 'dummy' }, 200);
 };
+
+const verifySignature = ({ rawBody, params: { header: { "x-signature-ed25519": sig, "x-signature-timestamp": ts } = {} } = {} }) => {
+    const pubKey = getPubKey();
+    const message = encode(ts) + encode(rawBody);
+    // todo
+}
+
+const getPubKey = () => 'todo'
+
+const encode = raw => 'todo'
+
+const response = (body, statusCode, headers = {}) => ({
+    statusCode,
+    headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+    },
+    body: JSON.stringify({
+        type: RESPONSE_TYPES.MESSAGE_NO_SOURCE,
+        content: {
+            tts: false,
+            data: body,
+            embeds: [],
+            allowed_mentions: [],
+        }
+    }),
+    isBase64Encoded: false,
+});
+
+const pingPong = ({ type }) => type == '1'
+
 // const Discord = require('discord.js')
 // const axios = require('axios')
 // require('dotenv').config()
